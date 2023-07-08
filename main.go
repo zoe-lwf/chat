@@ -12,5 +12,6 @@ func main() {
 	//初始化
 	db.InitMysql(config.GlobalConfig.MySQL.DNS)
 
+	// router启动
 	router.HTTPRouter()
 }

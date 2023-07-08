@@ -1,6 +1,7 @@
 package router
 
 import (
+	"chat/config"
 	"chat/service"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -14,7 +15,7 @@ func HTTPRouter() {
 
 	//用户注册
 	r.POST("/register", service.Register)
-	httpAddr := fmt.Sprintf("%s:%s", "127.0.0.1", "8080")
+	httpAddr := fmt.Sprintf("%s:%s", config.GlobalConfig.App.IP, config.GlobalConfig.App.HTTPServerPort)
 	fmt.Println(httpAddr)
 	err := r.Run(httpAddr)
 

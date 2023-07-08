@@ -1,2 +1,10 @@
 mysql:
   dns: "root:123456@tcp(127.0.0.1:3306)/go_chat?charset=utf8mb4&parseTime=True&loc=Local"
+app:
+  salt: "go_chat"  #密码加盐
+  ip: "127.0.0.1"
+  http_server_port: "8080"       # http 端口
+  websocket_server_port: "9091"  # websocket 端口
+jwt:
+  sign_key: "go_lwf"
+  expire_time: 720  # hour
