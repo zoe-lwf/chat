@@ -17,6 +17,8 @@ type Configuration struct {
 		IP             string `mapstructure:"ip"`               // 应用程序 IP 地址
 		HTTPServerPort string `mapstructure:"http_server_port"` // HTTP 服务器端口
 		WebsocketPort  string `mapstructure:"websocket_server_port"`
+		WorkerPoolSize uint32 `mapstructure:"worker_pool_size"` //队列数量
+		MaxWorkerTask  uint32 `mapstructure:"max_worker_task"`  //业务 worker 对应负责的任务队列最大任务存储数量
 	} `mapstructure:"app"`
 
 	JWT struct {
@@ -33,6 +35,8 @@ func (c Configuration) String() string {
 		c.App.IP,
 		c.App.HTTPServerPort,
 		c.App.WebsocketPort,
+		c.App.WorkerPoolSize,
+		c.App.MaxWorkerTask,
 		c.JWT.SignKey,
 		c.JWT.ExpireTime,
 	)

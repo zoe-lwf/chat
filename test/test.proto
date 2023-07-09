@@ -1,0 +1,9 @@
+
+
+syntax = "proto3";
+option go_package = "./protoService";
+message Userinfo {
+  string name = 1;
+  int32 age = 2;
+  repeated string hobby = 3;
+}
