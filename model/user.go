@@ -30,3 +30,15 @@ func GetUserCountByPhone(phoneNumber string) (int64, error) {
 func CreateUser(user *User) error {
 	return db.DB.Create(user).Error
 }
+
+func GetUserFromPhoneAndPWD(phoneNumber, password string) (*User, error) {
+	user := new(User)
+	err := db.DB.Model(&User{}).Where("phone_number = ? and password = ?", phoneNumber, password).First(user).Error
+	return user, err
+}
+
+func GetUserById(id uint64) (*User, error) {
+	user := new(User)
+	err := db.DB.Model(&User{}).Where("id=?", id).First(user).Error
+	return user, err
+}

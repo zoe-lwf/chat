@@ -70,3 +70,43 @@ func Register(c *gin.Context) {
 		},
 	})
 }
+
+func Login(c *gin.Context) {
+	phoneNumber := c.PostForm("phone_number")
+	password := c.PostForm("password")
+	if phoneNumber == "" || password == "" {
+		c.JSON(http.StatusOK, gin.H{
+			"code":    "-1",
+			"message": "参数不正确",
+		})
+		return
+	}
+	// 验证账号名和密码是否正确
+	ub, err := model.GetUserFromPhoneAndPWD(phoneNumber, util.GetMD5(password))
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"code": -1,
+			"msg":  "手机号或密码错误",
+		})
+		return
+	}
+	// 生成 token
+	token, err := util.GenerateToken(ub.ID)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"code": -1,
+			"msg":  "系统错误:" + err.Error(),
+		})
+		return
+	}
+
+	// 发放 token
+	c.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"msg":  "登录成功",
+		"data": gin.H{
+			"token":   token,
+			"user_id": util.Uint64ToStr(ub.ID),
+		},
+	})
+}
