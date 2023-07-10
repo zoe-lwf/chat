@@ -17,9 +17,6 @@ type Server struct {
 	taskQueue []chan *Req //工作池
 }
 
-// Handler 路由函数
-type Handler func()
-
 func GetServer() *Server {
 	//once.Do的作用：无论如何更换Do中的方法,保证once只被sync(同步)执行一次
 	once.Do(func() {

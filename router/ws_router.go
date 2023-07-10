@@ -1,7 +1,7 @@
 package router
 
 import (
-	"chat/pkg/ws"
+	ws2 "chat/service/ws"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -20,7 +20,7 @@ var upgrade = websocket.Upgrader{
 var connID uint64
 
 func WSRouter() {
-	server := ws.GetServer()
+	server := ws2.GetServer()
 	// 开启worker工作池
 	server.StartWorkerPool()
 
@@ -29,6 +29,7 @@ func WSRouter() {
 	r := gin.Default()
 
 	gin.SetMode(gin.ReleaseMode)
+
 	r.GET("/ws", func(c *gin.Context) {
 		// 升级协议  http -> websocket
 		WsConn, err := upgrade.Upgrade(c.Writer, c.Request, nil)
@@ -37,7 +38,7 @@ func WSRouter() {
 			return
 		}
 		// 初始化连接
-		ws.NewConnection(server, WsConn, connID)
+		ws2.NewConnection(server, WsConn, connID)
 		connID++
 		// 开启读写线程
 

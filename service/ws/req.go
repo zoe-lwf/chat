@@ -1,5 +1,8 @@
 package ws
 
+// Handler 路由函数
+type Handler func()
+
 // Req 请求
 type Req struct {
 	conn *Conn   // 连接

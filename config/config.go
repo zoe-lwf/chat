@@ -25,6 +25,11 @@ type Configuration struct {
 		SignKey    string `mapstructure:"sign_key"`    // JWT 签名密钥
 		ExpireTime int    `mapstructure:"expire_time"` // JWT 过期时间（小时）
 	} `mapstructure:"jwt"`
+
+	Redis struct {
+		Addr     string `mapstructure:"addr"`     // Redis 地址
+		Password string `mapstructure:"password"` // Redis 认证密码
+	} `mapstructure:"redis"`
 }
 
 func (c Configuration) String() string {
@@ -39,6 +44,8 @@ func (c Configuration) String() string {
 		c.App.MaxWorkerTask,
 		c.JWT.SignKey,
 		c.JWT.ExpireTime,
+		c.Redis.Addr,
+		c.Redis.Password,
 	)
 }
 
