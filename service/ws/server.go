@@ -13,7 +13,7 @@ var (
 
 // Server 连接管理
 type Server struct {
-	ConnMap   *sync.Map   // 并发安全的 map,登录的用户连接 k-用户userid v-连接
+	connMap   *sync.Map   // 并发安全的 map,登录的用户连接 k-用户userid v-连接
 	taskQueue []chan *Req //工作池
 }
 
@@ -52,6 +52,21 @@ func (cm *Server) StartOneWorker(workId int, taskQueue chan *Req) {
 
 // RemoveConn 删除连接
 func (cm *Server) RemoveConn(userId uint64) {
-	cm.ConnMap.Delete(userId)
+	cm.connMap.Delete(userId)
 	fmt.Printf("connection UserId=%d remove from Server\n", userId)
+}
+
+// AddConn 添加连接
+func (cm *Server) AddConn(userId uint64, conn *Conn) {
+	cm.connMap.Store(userId, conn)
+	fmt.Printf("connection UserId=%d add to Server\n", userId)
+}
+
+// GetConn 根据userid获取相应的连接
+func (cm *Server) GetConn(userId uint64) *Conn {
+	value, ok := cm.connMap.Load(userId)
+	if ok {
+		return value.(*Conn)
+	}
+	return nil
 }

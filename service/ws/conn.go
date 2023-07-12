@@ -1,8 +1,10 @@
 package ws
 
 import (
+	"chat/protocol/pb"
 	"fmt"
 	"github.com/gorilla/websocket"
+	"google.golang.org/protobuf/proto"
 	"sync"
 	"time"
 )
@@ -14,7 +16,7 @@ type Conn struct {
 	ConnId           uint64          // 连接编号，通过对编号取余，能够让 Conn 始终进入同一个 worker，保持有序性
 	server           *Server         // 当前连接属于哪个 server
 	UserId           uint64          // 连接所属用户id
-	UserIdMutex      sync.RWMutex    // 保护 userId 的锁
+	UserIdMutex      sync.RWMutex    // 保护 userId 的锁,读写锁
 	Socket           *websocket.Conn // 用户连接
 	sendCh           chan []byte     // 用户要发送的数据
 	isClose          bool            // 连接状态
@@ -43,6 +45,9 @@ func NewConnection(server *Server, wsConn *websocket.Conn, ConnId uint64) *Conn 
 func (c *Conn) Start() {
 	// 开启从客户端读取数据流程的 goroutine
 	go c.StartReader()
+
+	//开启从客户端写入数据流的协程 goroutine
+	go c.StartWriterWithBuffer()
 }
 
 // StartReader 用于从客户端中读取数据
@@ -63,10 +68,45 @@ func (c *Conn) StartReader() {
 	}
 }
 
-func (c *Conn) HandlerMessage(data []byte) {
+func (c *Conn) HandlerMessage(bytes []byte) {
 	//  所有错误都需要写回给客户端
 	// 消息解析 proto string -> struct
+	input := new(pb.Input)
+	err := proto.Unmarshal(bytes, input)
+	if err != nil {
+		fmt.Println("unmarshal error", err)
+		return
+	}
+	fmt.Println("收到消息：", input)
 
+	// 对未登录用户进行拦截
+	if input.Type != pb.CmdType_CT_Login && c.GetUserId() == 0 {
+		return
+	}
+
+	req := &Req{
+		conn: c,
+		data: input.Data,
+		f:    nil,
+	}
+	switch input.Type {
+	case pb.CmdType_CT_Login: // 登录
+		req.f = req.Login
+	//case pb.CmdType_CT_Heartbeat: // 心跳
+	//	req.f = req.Heartbeat
+	//case pb.CmdType_CT_Message: // 上行消息
+	//	req.f = req.MessageHandler
+	//case pb.CmdType_CT_ACK: // ACK TODO
+	//
+	//case pb.CmdType_CT_Sync: // 离线消息同步
+	//	req.f = req.Sync
+	default:
+		fmt.Println("未知消息类型")
+	}
+
+	if req.f == nil {
+		return
+	}
 }
 
 func (c *Conn) Stop() {
@@ -99,7 +139,38 @@ func (c *Conn) GetUserId() uint64 {
 	return c.UserId
 }
 
+// SetUserId 设置 UserId
+func (c *Conn) SetUserId(userId uint64) {
+	c.UserIdMutex.Lock()
+	defer c.UserIdMutex.Unlock()
+
+	c.UserId = userId
+}
+
 // RemoteAddr 获取远程客户端地址
 func (c *Conn) RemoteAddr() string {
 	return c.Socket.RemoteAddr().String()
+}
+
+// StartWriterWithBuffer 向客户端写数据
+func (c *Conn) StartWriterWithBuffer() {
+	fmt.Println("[Writer Goroutine is running]")
+	defer fmt.Println(c.RemoteAddr(), "[conn Writer exit!]")
+
+}
+
+// SendMsg 根据 userId 给相应 socket 发送消息
+func (c *Conn) SendMsg(userId uint64, bytes []byte) {
+	c.isCloseMutex.RLock()
+	defer c.isCloseMutex.RUnlock()
+	// 已关闭
+	if c.isClose {
+		fmt.Println("connection closed when send msg")
+		return
+	}
+	// 根据 userId 找到对应 socket
+	conn := c.server.GetConn(userId)
+	// 发送
+	conn.sendCh <- bytes
+	return
 }

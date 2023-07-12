@@ -14,7 +14,7 @@ const (
 )
 
 func getUserKey(userId uint64) string {
-	return fmt.Sprintf("%s%d", userOnlinePrefix, ttl1D)
+	return fmt.Sprintf("%s%d", userOnlinePrefix, userId)
 }
 
 // SetUserOnline 设置用户在线

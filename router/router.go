@@ -28,6 +28,9 @@ func HTTPRouter() {
 		////获取群成员列表
 		//auth.POST("/group_user/list", service.GroupUserList)
 	}
+	//发送消息
+	r.GET("/user/sendMsg", service.SendMsg)
+
 	httpAddr := fmt.Sprintf("%s:%s", config.GlobalConfig.App.IP, config.GlobalConfig.App.HTTPServerPort)
 	fmt.Println(httpAddr)
 	err := r.Run(httpAddr)
@@ -35,4 +38,5 @@ func HTTPRouter() {
 	if err != nil && err != http.ErrServerClosed {
 		log.Fatalf("listen: %s\n", err)
 	}
+
 }
