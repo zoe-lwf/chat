@@ -38,9 +38,10 @@ func WSRouter() {
 			return
 		}
 		// 初始化连接
-		ws2.NewConnection(server, WsConn, connID)
+		conn := ws2.NewConnection(server, WsConn, connID)
 		connID++
 		// 开启读写线程
+		go conn.Start()
 
 	})
 }

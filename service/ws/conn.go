@@ -156,7 +156,52 @@ func (c *Conn) RemoteAddr() string {
 func (c *Conn) StartWriterWithBuffer() {
 	fmt.Println("[Writer Goroutine is running]")
 	defer fmt.Println(c.RemoteAddr(), "[conn Writer exit!]")
+	// 每 100ms 或者当 buffer 中存够 50 条数据时，进行发送
+	tickerInterval := 100
+	ticker := time.NewTicker(time.Millisecond * time.Duration(tickerInterval))
+	bufferLimit := 50
+	buffer := &pb.OutputBatch{Outputs: make([][]byte, 0, bufferLimit)}
 
+	send := func() {
+		if len(buffer.Outputs) == 0 {
+			return
+		}
+		sendData, err := proto.Marshal(buffer)
+		if err != nil {
+			fmt.Println("send data proto.Marshal err:", err)
+			return
+		}
+		if err = c.Socket.WriteMessage(websocket.BinaryMessage, sendData); err != nil {
+			fmt.Println("Send Data error:, ", err, " Conn Writer exit")
+			return
+		}
+		buffer.Outputs = make([][]byte, 0, bufferLimit)
+		// 更新心跳时间
+		c.KeepLive()
+	}
+	for {
+		select {
+		case buff := <-c.sendCh:
+			buffer.Outputs = append(buffer.Outputs, buff)
+			if len(buffer.Outputs) == bufferLimit {
+				send()
+			}
+		case <-ticker.C:
+			send()
+		case <-c.exitCh:
+			return
+		}
+
+	}
+}
+
+// KeepLive 更新心跳
+func (c *Conn) KeepLive() {
+	now := time.Now()
+	c.heartMutex.Lock()
+	defer c.heartMutex.Unlock()
+
+	c.lastHeartBeatTime = now
 }
 
 // SendMsg 根据 userId 给相应 socket 发送消息

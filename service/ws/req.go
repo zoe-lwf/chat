@@ -2,6 +2,7 @@ package ws
 
 import (
 	"chat/common"
+	"chat/config"
 	"chat/lib/cache"
 	"chat/protocol/pb"
 	"chat/util"
@@ -48,12 +49,12 @@ func (r *Req) Login() {
 		return
 	}
 	// Redis 存储用户数据 k: userId,  v: grpc地址，方便用户能直接通过这个地址进行 rpc 方法调用
-	//grpcServerAddr := fmt.Sprintf("%s:%s", config.GlobalConfig.App.IP, config.GlobalConfig.App.RPCPort)
-	//err = cache.SetUserOnline(userClaims.UserId, grpcServerAddr)
-	//if err != nil {
-	//	fmt.Println("[用户登录] 系统错误")
-	//	return
-	//}
+	grpcServerAddr := fmt.Sprintf("%s:%s", config.GlobalConfig.App.IP, config.GlobalConfig.App.RPCPort)
+	err = cache.SetUserOnline(userClaims.UserId, grpcServerAddr)
+	if err != nil {
+		fmt.Println("[用户登录] 系统错误")
+		return
+	}
 
 	// 设置 user_id
 	r.conn.SetUserId(userClaims.UserId)
