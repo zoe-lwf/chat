@@ -31,6 +31,9 @@ type Configuration struct {
 		Addr     string `mapstructure:"addr"`     // Redis 地址
 		Password string `mapstructure:"password"` // Redis 认证密码
 	} `mapstructure:"redis"`
+	RabbitMQ struct {
+		URL string `mapstructure:"url"`
+	}
 }
 
 func (c Configuration) String() string {
@@ -48,6 +51,7 @@ func (c Configuration) String() string {
 		c.JWT.ExpireTime,
 		c.Redis.Addr,
 		c.Redis.Password,
+		c.RabbitMQ.URL,
 	)
 }
 

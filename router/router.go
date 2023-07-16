@@ -38,5 +38,6 @@ func HTTPRouter() {
 	if err != nil && err != http.ErrServerClosed {
 		log.Fatalf("listen: %s\n", err)
 	}
+	fmt.Println("http router starting...")
 
 }

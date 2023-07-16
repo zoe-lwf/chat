@@ -1,6 +1,12 @@
 package model
 
-import "time"
+import (
+	"chat/pkg/db"
+	"chat/protocol/pb"
+	"fmt"
+	"google.golang.org/protobuf/proto"
+	"time"
+)
 
 type Message struct {
 	ID          uint64    `gorm:"primary_key;auto_increment;comment:'自增主键'" json:"id"`
@@ -18,4 +24,32 @@ type Message struct {
 
 func (*Message) TableName() string {
 	return "message"
+}
+
+func ProtoMarshalToMessage(data []byte) []*Message {
+	var messages []*Message
+	mqMessages := &pb.MQMessages{}
+	err := proto.Unmarshal(data, mqMessages)
+	if err != nil {
+		fmt.Println("json.Unmarshal(mqMessages) 失败,err:", err)
+		return nil
+	}
+	for _, mqMessage := range mqMessages.Messages {
+		message := &Message{
+			UserID:      mqMessage.UserId,
+			SenderID:    mqMessage.SenderId,
+			SessionType: int8(mqMessage.SessionType),
+			ReceiverId:  mqMessage.ReceiverId,
+			MessageType: int8(mqMessage.MessageType),
+			Content:     mqMessage.Content,
+			Seq:         mqMessage.Seq,
+			SendTime:    mqMessage.SendTime.AsTime(),
+		}
+		messages = append(messages, message)
+	}
+	return messages
+}
+
+func CreateMessage(msgs ...*Message) error {
+	return db.DB.Create(msgs).Error
 }

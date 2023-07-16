@@ -1,11 +1,16 @@
 package router
 
 import (
-	ws2 "chat/service/ws"
+	"chat/config"
+	"chat/service/ws"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 // websocket服务
@@ -20,7 +25,7 @@ var upgrade = websocket.Upgrader{
 var connID uint64
 
 func WSRouter() {
-	server := ws2.GetServer()
+	server := ws.GetServer()
 	// 开启worker工作池
 	server.StartWorkerPool()
 
@@ -38,10 +43,36 @@ func WSRouter() {
 			return
 		}
 		// 初始化连接
-		conn := ws2.NewConnection(server, WsConn, connID)
+		conn := ws.NewConnection(server, WsConn, connID)
 		connID++
 		// 开启读写线程
 		go conn.Start()
+		//conn.Start()
 
 	})
+
+	srv := &http.Server{
+		Addr:    fmt.Sprintf("%s:%s", config.GlobalConfig.App.IP, config.GlobalConfig.App.WebsocketPort),
+		Handler: r,
+	}
+	go func() {
+		fmt.Println("websocket 启动：", srv.Addr)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("listen: %s\n", err)
+		}
+	}()
+	fmt.Println("ws_router starting...")
+
+	//Set up channel on which to send signal notifications.
+	quit := make(chan os.Signal, 1)
+	//Notify方法很重要
+	//causes package signal to relay incoming signals to c
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	// Block until a signal is received.
+	s := <-quit
+	fmt.Println("Got signal:", s)
+
+	// 关闭服务
+	//server.Stop()
+
 }

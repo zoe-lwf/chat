@@ -44,9 +44,11 @@ func NewConnection(server *Server, wsConn *websocket.Conn, ConnId uint64) *Conn 
 
 func (c *Conn) Start() {
 	// 开启从客户端读取数据流程的 goroutine
+	//go c.StartReader()
 	go c.StartReader()
 
 	//开启从客户端写入数据流的协程 goroutine
+	//go c.StartWriterWithBuffer()
 	go c.StartWriterWithBuffer()
 }
 
@@ -69,15 +71,20 @@ func (c *Conn) StartReader() {
 }
 
 func (c *Conn) HandlerMessage(bytes []byte) {
+	fmt.Println(bytes)
 	//  所有错误都需要写回给客户端
 	// 消息解析 proto string -> struct
+	data := &pb.Input{Data: bytes}
+	bytes1, err := proto.Marshal(data)
+	fmt.Println(bytes)
+
 	input := new(pb.Input)
-	err := proto.Unmarshal(bytes, input)
+	err = proto.Unmarshal(bytes1, input)
 	if err != nil {
 		fmt.Println("unmarshal error", err)
 		return
 	}
-	fmt.Println("收到消息：", input)
+	fmt.Println("收到消息：", &input)
 
 	// 对未登录用户进行拦截
 	if input.Type != pb.CmdType_CT_Login && c.GetUserId() == 0 {
@@ -107,6 +114,8 @@ func (c *Conn) HandlerMessage(bytes []byte) {
 	if req.f == nil {
 		return
 	}
+	// 送入worker队列等待调度执行，这里不送如，后面channel就会阻塞
+	c.server.SendMsgToTaskQueue(req)
 }
 
 func (c *Conn) Stop() {

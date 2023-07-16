@@ -17,6 +17,7 @@ go get -u gorm.io/gorm
 go get -u gorm.io/driver/mysql
 go get github.com/spf13/viper
 go get github.com/go-redis/redis/v8
+go get github.com/wagslane/go-rabbitmq
  go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 ```
 服务端启动：
