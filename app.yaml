@@ -15,6 +15,6 @@ jwt:
 #https://pkg.go.dev/github.com/go-redis/redis/v8#section-readme
 redis:
   addr: "127.0.0.1:6379"
-  password: "" #no password set
+  password: "123456" #no password set
 rabbitmq:
   url: "amqp://guest:guest@localhost:5672/"

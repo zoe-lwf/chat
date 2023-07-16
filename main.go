@@ -2,6 +2,7 @@ package main
 
 import (
 	"chat/config"
+	"chat/lib/mq"
 	"chat/pkg/db"
 	"chat/router"
 )
@@ -14,7 +15,7 @@ func main() {
 	//初始化redis
 	db.InitRedis(config.GlobalConfig.Redis.Addr, config.GlobalConfig.Redis.Password)
 	//初始化MQ
-	// mq.InitMessageMQ(config.GlobalConfig.RabbitMQ.URL)
+	mq.InitMessageMQ(config.GlobalConfig.RabbitMQ.URL)
 	// router启动 http服务
 	go router.HTTPRouter()
 

@@ -19,6 +19,7 @@ var (
 
 func InitMessageMQ(url string) {
 	mq.InitRabbitMQ(url, MessageCreateHandler, MessageQueue, MessageRoutingKey, MessageExchangeName)
+	fmt.Println("rabbit mq is ok!")
 }
 
 func MessageCreateHandler(d rabbitmq.Delivery) rabbitmq.Action {
