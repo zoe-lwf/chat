@@ -42,3 +42,28 @@ func GetUserById(id uint64) (*User, error) {
 	err := db.DB.Model(&User{}).Where("id=?", id).First(user).Error
 	return user, err
 }
+
+func GetUserIdByIds(ids []uint64) ([]uint64, error) {
+	var newIds []uint64
+	m := make(map[uint64]struct{}, len(ids))
+	for i := 0; i < len(ids); i += 1000 {
+		var tmp []uint64
+		end := i + 1000
+		if end > len(ids) {
+			end = len(ids)
+		}
+		subIds := ids[i:end]
+		// Pluck queries a single column from a model, returning in the slice dest
+		err := db.DB.Model(&User{}).Where("id in (?)", subIds).Pluck("id", &tmp).Error
+		if err != nil {
+			return nil, err
+		}
+		for _, id := range tmp {
+			m[id] = struct{}{}
+		}
+	}
+	for id := range m {
+		newIds = append(newIds, id)
+	}
+	return newIds, nil
+}

@@ -23,9 +23,9 @@ func HTTPRouter() {
 	{
 		//添加好友
 		auth.POST("/friend/add", service.AddFriend)
-		//// 创建群聊
-		//auth.POST("/group/create", service.CreateGroup)
-		////获取群成员列表
+		// 创建群聊
+		auth.POST("/group/create", service.CreateGroup)
+		//获取群成员列表
 		//auth.POST("/group_user/list", service.GroupUserList)
 	}
 	//发送消息
