@@ -9,7 +9,7 @@ import (
 
 func AddFriend(c *gin.Context) {
 	friendStr := c.PostForm("friend_id")
-	friendId := util.StrToUnit64(friendStr)
+	friendId := util.StrToUint64(friendStr)
 	if friendId == 0 {
 		c.JSON(http.StatusOK, gin.H{
 			"code": -1,
