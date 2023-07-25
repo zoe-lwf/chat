@@ -1,6 +1,9 @@
 package model
 
-import "time"
+import (
+	"chat/pkg/db"
+	"time"
+)
 
 type GroupUser struct {
 	ID         uint64    `gorm:"primary_key;auto_increment;comment:'自增主键'" json:"id"`
@@ -12,4 +15,17 @@ type GroupUser struct {
 
 func (*GroupUser) TableName() string {
 	return "group_user"
+}
+
+// IsBelongToGroup 验证用户是否属于群
+func IsBelongToGroup(userId, groupId uint64) (bool, error) {
+	var cnt int64
+	err := db.DB.Model(&GroupUser{}).Where("user_id = ? and group_id = ?", userId, groupId).Count(&cnt).Error
+	return cnt > 0, err
+}
+
+func GetGroupUserIdsByGroupId(groupId uint64) ([]uint64, error) {
+	var ids []uint64
+	err := db.DB.Model(&GroupUser{}).Where("group_id = ?", groupId).Pluck("user_id", &ids).Error
+	return ids, err
 }

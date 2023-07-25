@@ -47,7 +47,6 @@ func WSRouter() {
 		connID++
 		// 开启读写线程
 		go conn.Start()
-		//conn.Start()
 
 	})
 

@@ -26,10 +26,10 @@ func HTTPRouter() {
 		// 创建群聊
 		auth.POST("/group/create", service.CreateGroup)
 		//获取群成员列表
-		//auth.POST("/group_user/list", service.GroupUserList)
+		auth.POST("/group_user/list", service.GroupUserList)
 	}
 	//发送消息
-	r.GET("/user/sendMsg", service.SendMsg)
+	//r.GET("/user/sendMsg", service.SendMsg)
 
 	httpAddr := fmt.Sprintf("%s:%s", config.GlobalConfig.App.IP, config.GlobalConfig.App.HTTPServerPort)
 	fmt.Println(httpAddr)
